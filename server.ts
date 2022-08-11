@@ -4,6 +4,7 @@ const app                     = express();
 const cors                    = require('cors');
 const dotenv                  = require('dotenv');
 
+// Routes
 const contactUsRoute = require('./routes/contact-us.route');
 
 // Configure Environment
