@@ -4,6 +4,7 @@
 
 # Using PM2 with TypeScript files on AWS
 ** pm2 start server.ts
+** pm2 stop <id#>
 ** pm2 list
 ** ./node_modules/.bin/pm2 install typescript
     * Local PM2 installed in node_modules of project needs typescript installed
