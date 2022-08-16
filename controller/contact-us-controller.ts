@@ -16,9 +16,9 @@ exports.sendMessage = (req: any, res: any) => {
     let email = req.body.email;
     let message = req.body.message;
   
-    if(!fullName || !email || message) {
+    if(!fullName || !email || !message) {
       console.log('There was either no Full Name or Email in the Request!');
-      return res.status(400).json({msg: "There was either no Code or Email in the Request!"})
+      return res.status(400).json({msg: "There was either no Fullname, Email, or Message in the Request!"})
     }
   
     // Set transport service which will send the emails
