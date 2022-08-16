@@ -1,7 +1,6 @@
 const nodemailer = require('nodemailer')
 const contactUs = require('../models/contact-us.model.ts');
 
-
 exports.contactUsTest = (req: any, res: any ) => {
     console.log('Contact API Works!')
     return res.status(200).json({msg: "contact us worked"})
@@ -17,7 +16,7 @@ exports.sendMessage = (req: any, res: any) => {
     let email = req.body.email;
     let message = req.body.message;
   
-    if(!fullName || !email) {
+    if(!fullName || !email || message) {
       console.log('There was either no Full Name or Email in the Request!');
       return res.status(400).json({msg: "There was either no Code or Email in the Request!"})
     }
