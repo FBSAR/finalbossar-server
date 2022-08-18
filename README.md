@@ -1,3 +1,9 @@
+# New IP Address for IP Changes that are needed
+    * environment.prod
+    * godaddy dns
+    * update 'fbs-copy-www' aws ip address (ssh connections on local repository)
+ 
+
 # Using Nodenom with TypeScript files Locally & AWS
 ** npx nodemon server.ts
     * https://nodejs.dev/en/learn/the-npx-nodejs-package-runner
