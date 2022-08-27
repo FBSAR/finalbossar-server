@@ -1,20 +1,10 @@
-const nodemailer = require('nodemailer')
+export {};
+const nodemailer = require('nodemailer');
 const hbs = require('nodemailer-express-handlebars')
 const path = require('path')
-
-const contactUs = require('../models/contact-us.model.ts');
-
-exports.contactUsTest = (req: any, res: any ) => {
-    console.log('Contact API Works!')
-    return res.status(200).json({msg: "contact us worked"})
-}
+const ContactUs = require('../models/contact-us.model.ts');
 
 exports.sendMessage = (req: any, res: any) => {
-
-    console.clear();
-    console.log('Sending Message');
-    console.log(req.body);
-  
     let fullName = req.body.fullName;
     let email = req.body.email;
     let message = req.body.message;
@@ -36,26 +26,8 @@ exports.sendMessage = (req: any, res: any) => {
       path.resolve('./controller/emails/'),
     };
 
-
-
-  
-    // Set transport service which will send the emails
-    var transporter =  nodemailer.createTransport({
-      service: 'hotmail',
-      auth: {
-            user: 'eddie@finalbossar.com',
-            pass: 'Et061792!',
-        },
-        debug: true, // show debug output
-        logger: true // log information in console
-    });
-
-
-    // use a template file with nodemailer
-    transporter.use('compile', hbs(handlebarOptions))
-  
-  //  configuration for email details
-   const FBSMailOptions = {
+    //  configuration for email details
+    const FBSMailOptions = {
     from: 'eddie@finalbossar.com', 
     to: `eddie@finalbossar.com`, 
     subject: 'Message from CONTACT-US | Finalbossar.com',
@@ -68,8 +40,22 @@ exports.sendMessage = (req: any, res: any) => {
       `
     };
 
-  // Thank the User for contacting Final Boss Studios!
-   var userMailOptions = {
+    // use a template file with nodemailer
+    transporter.use('compile', hbs(handlebarOptions))
+  
+    // Set transport service which will send the emails
+    var transporter =  nodemailer.createTransport({
+      service: 'hotmail',
+      auth: {
+            user: 'eddie@finalbossar.com',
+            pass: 'Et061792!',
+        },
+        debug: true, // show debug output
+        logger: true // log information in console
+    });
+
+    // Thank the User for contacting Final Boss Studios!
+    var userMailOptions = {
     from: 'contact@finalbossar.com', 
     to: `${email}`, 
     subject: '√ Message from Final Boss Studios (finalbossar.com)',
@@ -77,37 +63,49 @@ exports.sendMessage = (req: any, res: any) => {
     context: {
       fullName
     }
-  }
-  
-  //  Email sent to Final Boss
-   transporter.sendMail(FBSMailOptions, function (err: any, info: any) {
-    if(err) {
-      console.log(err)
-      return res.status(400).json(err);
     }
-    else {
-      console.log(info);
-      console.log('Email sent to Final Boss Admin');
-      
+  
+    //  Email sent to Final Boss
+    transporter.sendMail(FBSMailOptions, function (err: any, info: any) {
+      if(err) {
+        console.log(err)
+        return res.status(400).json(err);
+      }
+      else {
+        console.log(info);
+        console.log('Email sent to Final Boss Admin');
+        
 
-      //  Email sent to user
-      transporter.sendMail(userMailOptions, function (err: any, info: any) {
-        if(err) {
-          console.log(err)
-          return res.status(400).json(err);
-        }
-        else {
-          console.log(info);
-          console.log('Email sent to User');
-          
-          return res.status(200).json({
-            responseMsg: "Contact Message was sent"
+        //  Email sent to user
+        transporter.sendMail(userMailOptions, function (err: any, info: any) {
+          if(err) {
+            console.log(err)
+            return res.status(400).json(err);
+          }
+          else {
+            console.log(info);
+            console.log('Email sent to User');
+
+            let newContactMessage = ContactUs({
+              fullName,
+              email,
+              message
             })
-        }
-      });
-    }
-   });
 
-  
-  
-  }
+            newContactMessage.save((err: Error, message: any) => {
+              if (err) {
+                return res.status(400).json({ 'msg': err });
+            }
+            console.log(message);
+            
+            return res.status(200).json({
+              responseMsg: "Contact Message was sent"
+              })
+            })
+            
+            
+          }
+        });
+      }
+   });
+}
