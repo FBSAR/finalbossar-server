@@ -60,3 +60,43 @@ exports.registerUser = (req: any, res: any) => {
             }
     )
 }
+
+exports.loginUser = (req: any, res: any) => {
+    console.log(req.body);
+    let email = req.body.email;
+    let password = req.body.password;
+  
+    // Check if all info is in request.
+    if(!email || !password) {
+      return res.status(400).json({msg: "There was no Email or Password in the Request!"})
+    }
+
+
+  
+    Profile.findOne({ email: req.body.email }, (err: Error, profile: any) => {
+        if (err) {
+            return res.status(400).send({ 'msg': err });
+        }
+  
+        if (!profile) {
+            return res.status(400).json({ 'msg': 'The user does not exist' });
+        }
+  
+        profile.comparePassword(req.body.password, (err: Error, isMatch: Boolean) => {
+            if (isMatch && !err) {
+                console.log(`isMatch = ${isMatch}`)
+                console.log('Logged in as: ' + profile.email);
+                res.status(200).json({
+                    msg: 'User @' + profile.email + ' has logged in',
+                    // token: createToken(profile),
+                    // fullName: profile.fullName,
+                    // picture: profile.picture,
+                    // email: profile.email
+                });
+            } else {
+                return res.status(400).json({ msg: 'The email and password don\'t match.' });
+            }
+        });
+    });
+
+}

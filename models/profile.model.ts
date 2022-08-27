@@ -48,22 +48,22 @@ ProfileSchema.pre('save', function(this: any, next: any){
     })
     })
 
-    // ProfileSchema.methods.comparePassword = function(candidatePassword: any, cb: any) {
-    //     bcrypt.compare(candidatePassword, this.password, (err: Error, isMatch: Boolean) => {
-    //       // console.log('Password: ' + candidatePassword);
-    //       // console.log('Hashed Password: ' + this.password);
-    //       // console.log('Passwords Match: ' + isMatch);
-    //       if (err) return cb(err);
-    //       cb(null, isMatch);
-    //     })
-    //   }
+    ProfileSchema.methods.comparePassword = function(candidatePassword: any, cb: any) {
+        bcrypt.compare(candidatePassword, this.password, (err: Error, isMatch: Boolean) => {
+          // console.log('Password: ' + candidatePassword);
+          // console.log('Hashed Password: ' + this.password);
+          // console.log('Passwords Match: ' + isMatch);
+          if (err) return cb(err);
+          cb(null, isMatch);
+        })
+      }
       
       
       //custom method to generate authToken
-    //   ProfileSchema.methods.generateAuthToken = function() {
-    //     const token = jwt.sign({ _id: this._id }, config.get('myprivatekey')); //get the private key from the config file -> environment variable
-    //     return token;
-    //   }
+      ProfileSchema.methods.generateAuthToken = function() {
+        const token = jwt.sign({ _id: this._id }, config.get('myprivatekey')); //get the private key from the config file -> environment variable
+        return token;
+      }
   
   const Profile = mongoose.model('Profile', ProfileSchema);
   module.exports = Profile;
