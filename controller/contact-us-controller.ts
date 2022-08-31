@@ -48,7 +48,7 @@ exports.sendMessage = (req: any, res: any) => {
       service: 'hotmail',
       auth: {
             user: 'eddie@finalbossar.com',
-            pass: 'Et061792!',
+            pass: process.env.PASS,
         },
         debug: true, // show debug output
         logger: true // log information in console
