@@ -203,39 +203,44 @@ exports.changeName = (req: any, res: any ) => {
     console.log('Attempting to change Profile name...')
     console.log(req.body);
   
-    let fullName = req.body.fullName;
+    let firstName = req.body.firstName;
+    let lastName = req.body.lastName;
     let email = req.body.email;
     let password = req.body.password;
-    let filter = {email: email};
-    let update = { fullName: fullName};
 
-    if (!fullName || !password) {
-        res.status(400).send('Needs name and a password')
+    if (!password) {
+        res.status(400).send('Needs a password')
     } else {
   
         console.log('Finding Profile ...')
         // Find Profile, compare password, then update email.
-        Profile.findOne({ email: email}, (err: any, Profile: any) => {
-          if (err) {
-            return res.status(400).send({ 'msg': err });
-          }
-  
-          if (!Profile) {
-            return res.status(400).json({ 'msg': 'The Profile does not exist' });
-          }
-  
-          if (Profile.fullName === fullName) {
-            return res.status(400).send('Please enter an name that is different than your current one.');
-          }
-  
+        Profile.findOne({ email: email}, (err: any, profile: any) => {
+
+          let filter = {email: email};
+          let update = { 
+            firstName: firstName,
+            lastName: lastName,
+
+          };
+
+          if (err) return res.status(400).send({ 'msg': err });
+          if (!profile) return res.status(400).json({ msg: 'The Profile does not exist' });
+          if (profile.firstName == '' ) update.firstName = profile.firstName;
+          if (profile.lastName == '' ) update.lastName = profile.lastName;
+          
           console.log('Comparing passwords ...')
-          Profile.comparePassword(password, (err: any, isMatch: any) => {
+          profile.comparePassword(password, (err: any, isMatch: any) => {
             if (isMatch && !err) {
               console.log('Passwords matched!');
+              
+              // Update Name
               Profile.updateOne(filter, update)
               .then( (data: any) => {
                 console.log('Updated FullName:' + JSON.stringify(data));
-                return res.status(200).send(isMatch);
+                return res.status(200).json({
+                  firstName,
+                  lastName
+                });
               })
               .catch( (err: any) => {
                 console.log(err);
@@ -257,33 +262,36 @@ exports.changeEmail = (req: any, res: any) => {
     let email = req.body.email;
     let newEmail = req.body.newEmail;
     let password = req.body.password;
-    let filter = { email: email };
-    let update = { email: newEmail};
 
-    if (!email || !password) {
-        res.status(400).send('Needs an email and a password')
-    } else {
-  
-        console.log('Finding Profile ...')
-        // Find Profile, compare password, then update email.
+    if (!newEmail) {
+        console.log('No Email!');
+        return res.status(400).send('Request needs an email');
+    } 
+    
+    if(!password) {
+      console.log('No Password!');
+      return res.status(400).send('Request needs a password');
+    }
+      else {
+        
         Profile.findOne({ email: email}, (err: any, profile: any) => {
-          if (err) {
-            return res.status(400).send({ 'msg': err });
-          }
-  
-          if (!profile) {
-            return res.status(400).json({ 'msg': 'The Profile does not exist' });
-          }
-  
-          if (profile.email === newEmail) {
-            return res.status(400).send('Please enter an email that is different than your current one.');
-          }
+          console.log('Finding Profile ...');
+          if (err) return res.status(400).send({msg: err });
+          if (!profile) return res.status(400).json({msg: 'The Profile does not exist' });
+          if (profile.email === newEmail) return res.status(400).json({msg: 'Please enter an email that is different than your current one.'});
+
+          let filter = { email: email };
+          let update = { email: newEmail};
   
           console.log('Comparing passwords ...')
-          Profile.comparePassword(password, (err: any, isMatch: any) => {
+          profile.comparePassword(password, (err: any, isMatch: any) => {
             if (isMatch && !err) {
               console.log('Passwords matched!');
-              Profile.updateOne(email, update)
+
+              // Send Email and Check Code
+              changeEmailCode(newEmail, email, req, res);
+              
+              Profile.updateOne(filter, update)
               .then( (data: any) => {
                 console.log('Updated Email:' + JSON.stringify(data));
                 return res.status(200).send(isMatch);
@@ -301,7 +309,69 @@ exports.changeEmail = (req: any, res: any) => {
       }
 }
 
+function changeEmailCode(newEmail: string, oldEmail: string, req: any, res: any) {
+  const changeEmailOptionsOld = {
+    from: 'info@finalbossar.com', 
+    to: oldEmail, 
+    subject: 'Change Email',
+    html:
+    `
+      <h1>Final Boss Studios</h1>
+      <p>This is an email to inform you that your 
+      FinalBossAR.com Profile's email has changed to: ${newEmail}.
+      
+      If you have not changed this yourself, please update
+       your password and/or contact us @ contactus@finalbossar.com
+      </p>
+      `
+  };
+  const changeEmailOptionsNew = {
+    from: 'info@finalbossar.com', 
+    to: newEmail, 
+    subject: 'Change Email',
+    html:
+    `
+      <h1>Final Boss Studios</h1>
+      <p>This is an email to inform you that your 
+      FinalBossAR.com Profile has been successfully updated.
+      `
+  };
+
+    var transporter =  nodemailer.createTransport({
+      service: 'hotmail',
+      auth: {
+            user: 'eddie@finalbossar.com',
+            pass: process.env.PASS,
+        },
+        debug: true, // show debug output
+        logger: true // log information in console
+    });
+  
+    transporter.sendMail(changeEmailOptionsOld, function (err: any, info: any) {
+      if(err) {
+        console.log(err)
+        return res.status(400).json(err);
+      }
+      else {
+        console.log(info);
+        console.log('Email sent to Final Boss Admin');
+      }
+    });
+    transporter.sendMail(changeEmailOptionsNew, function (err: any, info: any) {
+      if(err) {
+        console.log(err)
+        return res.status(400).json(err);
+      }
+      else {
+        console.log(info);
+        console.log('Email sent to Final Boss Admin');
+        return res.status(200).send("Send Email to user");
+      }
+    });
+}
+
 exports.changePassword = (req: any, res: any ) => {
+    console.clear();
     console.log('Attempting to change Profile password...')
     console.log(req.body);
   
@@ -309,54 +379,178 @@ exports.changePassword = (req: any, res: any ) => {
     let newPassword = req.body.newPassword;
     let oldPassword = req.body.oldPassword;
 
-    if (!email || !oldPassword) {
-        res.status(400).send('Needs email and a password')
+    if (!email || !newPassword) {
+        res.status(400).send('Needs email, new password, and old password')
     } else {
   
         console.log('Finding Profile ...')
+
         // Find Profile, compare password, then update email.
-        Profile.findOne({ email: email}, (err: any, Profile: any) => {
+        Profile.findOne({ email: email}, (err: any, profile: any) => {
           if (err) {
             return res.status(400).send({ 'msg': err });
           }
   
-          if (!Profile) {
+          if (!profile) {
             return res.status(400).json({ 'msg': 'The Profile does not exist' });
           }
 
   
-          console.log('Comparing passwords ...')
-          Profile.comparePassword(oldPassword, (err: any, isMatch: any) => {
+          console.log(profile);
+          console.log('Comparing passwords ...');
+          // Check to see if newPassword is the same as the old one.
+          profile.comparePassword(newPassword, (err: any, isMatch: any) => {
 
-            if (isMatch && !err) {
+            if (!isMatch && !err) {
   
               // Create new hashed password
               bcrypt.genSalt(10, (err: any, salt: any) => {
   
                 if (err) return (err);
-  
                 bcrypt.hash(newPassword, salt, (err: any, hash: string) => {
+                  
                   console.log('New Password Hashed: ' + hash);
-                  let newPassword = hash;
-                  let filter = { password: Profile.password };
-                  let update = { password: newPassword }
+                  let filter = { email: email };
+                  let update = { password: hash }
   
-                  Profile.updateOne(filter, update)
-                    .then( (data: any) => {
-                      console.log('Updated Password: ' + JSON.stringify(data));
-                      res.status(200).send(isMatch);
+                  Profile.findOneAndUpdate(
+                    filter, 
+                    update,
+                    (err: any, profile: any) => {
+                      if (err) return err;
+                      if(!profile) throw Error('No Profile with that email');
+                      console.log('Updated Password: ' + JSON.stringify(profile));
+                      return res.status(200).send(isMatch);
+
                     })
-                    .catch( (err: any) => {
-                      console.log(err);
-                      res.status(400).end('There was an error');
-                    })
-                  })
-                })
+                    // .then( (data: any) => {
+                    //   return res.status(200).send(isMatch);
+                    // })
+                    // .catch( (err: any) => {
+                    //   console.log(err);
+                    //   return res.status(400).end('There was an error');
+                    // })
+                });
+              })
             } else {
               console.log(isMatch);
-              return res.status(200).send('Passwords do not match!');
+              return res.status(400).json({msg: 'Cannot have previously used password!'});
             }
           })
         })
       }
+}
+
+exports.forgotChangePassword = (req: any, res: any ) => {
+    console.clear();
+    console.log('Attempting to change Profile password...')
+    console.log(req.body);
+  
+    let email = req.body.email;
+    let newPassword = req.body.newPassword;
+
+    if (!email || !newPassword) {
+        res.status(400).send('Needs email, new password, and old password')
+    } else {
+  
+        console.log('Finding Profile ...')
+
+        // Find Profile, compare password, then update email.
+        Profile.findOne({ email: email}, (err: any, profile: any) => {
+          if (err) {
+            return res.status(400).send({ 'msg': err });
+          }
+  
+          if (!profile) {
+            return res.status(400).json({ 'msg': 'The Profile does not exist' });
+          }
+
+  
+          console.log(profile);
+          console.log('Comparing passwords ...');
+          // Check to see if newPassword is the same as the old one.
+          profile.comparePassword(newPassword, (err: any, isMatch: any) => {
+
+            if (!isMatch && !err) {
+  
+              // Create new hashed password
+              bcrypt.genSalt(10, (err: any, salt: any) => {
+  
+                if (err) return (err);
+                bcrypt.hash(newPassword, salt, (err: any, hash: string) => {
+                  
+                  console.log('New Password Hashed: ' + hash);
+                  let filter = { email: email };
+                  let update = { password: hash }
+  
+                  Profile.findOneAndUpdate(
+                    filter, 
+                    update,
+                    (err: any, profile: any) => {
+                      if (err) return err;
+                      if(!profile) throw Error('No Profile with that email');
+                      console.log('Updated Password: ' + JSON.stringify(profile));
+                      return res.status(200).send(isMatch);
+
+                    })
+                    // .then( (data: any) => {
+                    //   return res.status(200).send(isMatch);
+                    // })
+                    // .catch( (err: any) => {
+                    //   console.log(err);
+                    //   return res.status(400).end('There was an error');
+                    // })
+                });
+              })
+            } else {
+              console.log(isMatch);
+              return res.status(400).json({msg: 'Cannot have previously used password!'});
+            }
+          })
+        })
+      }
+}
+ 
+// Send Code to the user's entered Email address
+function generateCode(length: number) {
+  let result = '';
+  const characters = '0123456789';
+  const charactersLength = characters.length;
+
+  for ( let i = 0; i < length; i++ ) {
+     result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  // console.log('Generated Code: ' + result);
+  return result;
+}
+
+exports.forgot = (req: any, res: any ) => {
+  console.log('Attempting Forgot Session...')
+  console.log(req.body);
+
+  let email = req.body.email;
+  let code = generateCode(4);
+
+  if (!email) {
+      res.status(400).send('Needs email.')
+  } else {
+
+      console.log('Finding Profile ...');
+      console.log(code);
+      // Find Profile, compare password, then update email.
+      Profile.findOne({ email: email}, (err: any, Profile: any) => {
+        if (err) {
+          return res.status(400).send({ 'msg': err });
+        }
+
+        if (!Profile) {
+          return res.status(400).json({ 'msg': 'The Profile does not exist' });
+        }
+
+        return res.status(200).json({
+          code
+        })
+      })
+
+    }
 }
