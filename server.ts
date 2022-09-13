@@ -26,8 +26,8 @@ const contactUsRoute = require('./routes/contact-us.route');
 const profileRoute = require('./routes/profile.route');
 
 // API Routes
-app.use("/contact-us", contactUsRoute);
-app.use("/profile", profileRoute);
+app.use("/api/contact-us", contactUsRoute);
+app.use("/api/profile", profileRoute);
 // Profile API
 
 // Listen on PORT
