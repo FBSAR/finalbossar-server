@@ -39,10 +39,6 @@ exports.sendMessage = (req: any, res: any) => {
       <p>${message}</p>
       `
     };
-
-    // use a template file with nodemailer
-    transporter.use('compile', hbs(handlebarOptions))
-  
     // Set transport service which will send the emails
     var transporter =  nodemailer.createTransport({
       service: 'hotmail',
@@ -53,6 +49,10 @@ exports.sendMessage = (req: any, res: any) => {
         debug: true, // show debug output
         logger: true // log information in console
     });
+
+    // use a template file with nodemailer
+    transporter.use('compile', hbs(handlebarOptions))
+  
 
     // Thank the User for contacting Final Boss Studios!
     var userMailOptions = {
