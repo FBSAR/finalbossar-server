@@ -83,7 +83,7 @@ exports.sendRegisterCode = (req: any, res: any) => {
   var transporter =  nodemailer.createTransport({
     service: 'hotmail',
     auth: {
-          user: 'eddie@finalbossar.com',
+          user: 'admin@finalbossar.com',
           pass: process.env.PASS,
       },
       debug: true, // show debug output
@@ -340,7 +340,7 @@ function changeEmailCode(newEmail: string, oldEmail: string, req: any, res: any)
     var transporter =  nodemailer.createTransport({
       service: 'hotmail',
       auth: {
-            user: 'eddie@finalbossar.com',
+            user: 'admin@finalbossar.com',
             pass: process.env.PASS,
         },
         debug: true, // show debug output
