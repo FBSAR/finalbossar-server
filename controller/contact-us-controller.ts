@@ -28,8 +28,8 @@ exports.sendMessage = (req: any, res: any) => {
 
     //  configuration for email details
     const FBSMailOptions = {
-    from: 'eddie@finalbossar.com', 
-    to: `eddie@finalbossar.com`, 
+    from: 'admin@finalbossar.com', 
+    to: `admin@finalbossar.com`, 
     subject: 'Message from CONTACT-US | Finalbossar.com',
     html:
     `
@@ -43,7 +43,7 @@ exports.sendMessage = (req: any, res: any) => {
     var transporter =  nodemailer.createTransport({
       service: 'hotmail',
       auth: {
-            user: 'eddie@finalbossar.com',
+            user: 'admin@finalbossar.com',
             pass: process.env.PASS,
         },
         debug: true, // show debug output
