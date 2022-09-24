@@ -6,12 +6,12 @@ const dotenv                  = require('dotenv');
 
 // Configure Environment
 dotenv.config();
-console.log(process.env.DB_HOST_DEV);
+console.log(process.env.DB_HOST_PROD);
 
 // config and connect to mongodb
 console.log('Connecting via Mongoose');
 mongoose
-  .connect(process.env.DB_HOST_DEV, {
+  .connect(process.env.DB_HOST_PROD, {
     useNewUrlParser: true, useUnifiedTopology: true
   })
   .then(() => console.log('Connected to MongoDB'))
