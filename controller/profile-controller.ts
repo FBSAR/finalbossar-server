@@ -524,8 +524,8 @@ function generateCode(length: number) {
   return result;
 }
 
-exports.forgot = (req: any, res: any ) => {
-  console.log('Attempting Forgot Session...')
+exports.forgotEmailValidation = (req: any, res: any ) => {
+  console.log('Attempting Forgot Code & Email Validation...')
   console.log(req.body);
 
   let email = req.body.email;
@@ -544,12 +544,63 @@ exports.forgot = (req: any, res: any ) => {
         }
 
         if (!Profile) {
-          return res.status(400).json({ 'msg': 'The Profile does not exist' });
+          return res.status(400).json({ msg: 'The Profile does not exist' });
         }
+        // Set transport service which will send the emails
+        var transporter =  nodemailer.createTransport({
+          service: 'hotmail',
+          auth: {
+                user: 'admin@finalbossar.com',
+                pass: process.env.PASS,
+            },
+            debug: true, // show debug output
+            logger: true // log information in console
+        });
+      
+      //  configuration for email details
+       const mailOptions = {
+        from: 'register@finalbossar.com', // sender address
+        to: `${email}`, // list of receivers
+        subject: 'FinalBossAR Forgot Password Code',
+        html:
+        `
+          <h1>FinalBoss AR</h1>
+          <div style="width: 100px; height: 100px; background: lightgreen; text-align: center;">
+            <p style="padding-top: 3em;">Logo</p>
+          </div>
+          <h3 style="
+            font-size: 1.4em;
+            color: #888;
+          ">Here is your 4 digit code</h3>
+          <p style="font-size: 1.4em;">Please use this code on the website to complete your forgot password process: </p>
+          
+          <p style="
+            background: #dedede;
+            border-radius: 100px;
+            border: 2px solid #3cf63c;
+            width: 200px;
+            color: #3cf63c;
+            padding: 0.5em;
+            text-align: center;
+            font-size: 2em;
+            letter-spacing: 11px;">${code}</p>`,
+        };
+      
+       transporter.sendMail(mailOptions, function (err: any, info: any) {
+        if(err) {
+          console.log(err)
+          return res.status(400).json({msg: "There was an error sending code to email.", err});
+        }
+        else {
+          console.log(info);
+          return res.status(200).json(info)
+        }
+       });
+      
 
-        return res.status(200).json({
-          code
-        })
+        // return res.status(200).json({
+        //   code
+        // })
       })
 
     }

@@ -9,7 +9,7 @@ router.post('/change-email', profileController.changeEmail);
 router.post('/change-name', profileController.changeName);
 router.post('/change-password', profileController.changePassword);
 router.post('/forgot-change-password', profileController.forgotChangePassword);
-router.post('/forgot', profileController.forgot);
+router.post('/forgot-email-validation', profileController.forgotEmailValidation);
 
 export {};
 
