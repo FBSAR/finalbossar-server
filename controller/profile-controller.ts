@@ -593,14 +593,9 @@ exports.forgotEmailValidation = (req: any, res: any ) => {
         }
         else {
           console.log(info);
-          return res.status(200).json(info)
+          return res.status(200).json({code})
         }
        });
-      
-
-        // return res.status(200).json({
-        //   code
-        // })
       })
 
     }
