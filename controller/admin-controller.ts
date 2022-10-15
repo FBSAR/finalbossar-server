@@ -63,23 +63,34 @@ exports.registerAdmin = (req: any, res: any) => {
   let email = 'admin@finalbossar.com';
   let password = 'bossfinaL7$';
 
-  let newAdmin = Admin({
-      email,
-      password
-  });
+  Admin.findOne(
+      {email: email},
+      (err: any, admin: any) => {
+          if(err) return res.status(400).json({err})
+          if(admin) return res.status(400).json({msg: "This is already an admin registered!"})
+          else {
+            let newAdmin = Admin({
+                email,
+                password
+            });
+            
+            newAdmin.save((err: Error, newAdmin: Admin) => {
+                if (err) {
+                    console.log(err)
+                    return res.status(400).json({ 'msg': err });
+                }
+                if (!newAdmin) {
+                    console.log('There was no admin saved!')
+                    return res.status(400).json({ msg: 'There was no admin saved!' });
+                }
+                console.log('Admin registered!');
+                return res.status(200).json(newAdmin);
+                });
+          }
+      }
+  )
+
   
-  newAdmin.save((err: Error, newAdmin: Admin) => {
-      if (err) {
-          console.log(err)
-          return res.status(400).json({ 'msg': err });
-      }
-      if (!newAdmin) {
-          console.log('There was no admin saved!')
-          return res.status(400).json({ msg: 'There was no admin saved!' });
-      }
-      console.log('Admin registered!');
-      return res.status(200).json(newAdmin);
-      });
 }
 exports.getProfiles = (req: any, res: any) => {
   console.log('Trying to get all Profiles');
