@@ -1,4 +1,5 @@
 export {};
+import { format } from 'date-fns'
 const nodemailer = require('nodemailer')
 const hbs = require('nodemailer-express-handlebars')
 const path = require('path')
@@ -24,8 +25,10 @@ exports.registerProfile = (req: any, res: any) => {
     console.log(req.body);
     let firstName = req.body.firstName;
     let lastName = req.body.lastName;
+    let newsletter = req.body.newsletter;
     let email = req.body.email;
     let password = req.body.password;
+    let dateRegistered = format(Date.now(), "MMMM do, yyyy");
   
     // Check if all info is in request.
     if(!firstName || !lastName || !email || !password) {
@@ -40,13 +43,17 @@ exports.registerProfile = (req: any, res: any) => {
                 return res.status(400).json({ 'msg': err });
             }
             if(profile) {
-                return res.status(400).json({ 'msg': 'The Profile already exists with this email' });
+                console.log(profile);
+                
+                return res.status(400).json({ msg: 'The Profile already exists with this email' });
             } else {
                 // Create Profile Object
                 let newProfile = Profile({
                     firstName,
                     lastName,
                     email,
+                    dateRegistered,
+                    newsletter,
                     password
                 });
                 // Save Object
@@ -67,8 +74,8 @@ exports.registerProfile = (req: any, res: any) => {
     )
 }
 exports.sendRegisterCode = (req: any, res: any) => {
-
   console.clear();
+  console.log('Sending Registration Code');
   console.log(req.body);
 
   let code = req.body.code;
@@ -95,12 +102,8 @@ exports.sendRegisterCode = (req: any, res: any) => {
   from: 'register@finalbossar.com', // sender address
   to: `${email}`, // list of receivers
   subject: 'FinalBossAR Registration Code',
-  html:
-  `
-    <h1>FinalBoss AR</h1>
-    <div style="width: 100px; height: 100px; background: lightgreen; text-align: center;">
-      <p style="padding-top: 3em;">Logo</p>
-    </div>
+  html:  `
+    <img src="https://final-boss-logos.s3.us-east-2.amazonaws.com/Final_Boss_Studios_Text_Logo_White_BG.png" style="width: 300px;">
     <h3 style="
       font-size: 1.4em;
       color: #888;
@@ -108,11 +111,10 @@ exports.sendRegisterCode = (req: any, res: any) => {
     <p style="font-size: 1.4em;">Please use this code on the website to complete your registration: </p>
     
     <p style="
-      background: #dedede;
+      background: #330474;
       border-radius: 100px;
-      border: 2px solid #3cf63c;
       width: 200px;
-      color: #3cf63c;
+      color: #fff;
       padding: 0.5em;
       text-align: center;
       font-size: 2em;
@@ -157,8 +159,6 @@ exports.loginProfile = (req: any, res: any) => {
     if(!email || !password) {
       return res.status(400).json({msg: "There was No Email or No Password in the Request!"})
     }
-
-
   
     Profile.findOne({ email: req.body.email }, (err: Error, profile: any) => {
         if (err) {
@@ -196,7 +196,6 @@ exports.loginProfile = (req: any, res: any) => {
             }
         });
     });
-
 }
 
 exports.changeName = (req: any, res: any ) => {

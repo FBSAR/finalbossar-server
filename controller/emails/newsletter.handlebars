@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Contact Us |Thank you</title>
+
+  <style>
+      p {
+          font-size: 1.5em;
+          white-space: pre-wrap;
+      }
+      h1 {
+        color: #330474;
+        font-size: 2em;
+      }
+      #fbs-logo {
+          width: 300px;
+          margin: 3em auto;
+      }
+      #newletter-photo {
+          width: 100%;
+      }
+  </style>
+
+</head>
+<body>
+  <div style="text-align: center;">
+      <img id="fbs-logo" src="https://final-boss-logos.s3.us-east-2.amazonaws.com/Newsletter_logo.png">
+  </div>
+    <h1>{{title}} </h1>
+
+  <div>
+      {{!-- TODO: Generate from S3 & Front End --}}
+      <img id="newletter-photo" src="https://final-boss-logos.s3.us-east-2.amazonaws.com/detroit-skyline-original.png">
+  </div>
+  <p>{{newsletter}} </p>
+</body>
+</html>
