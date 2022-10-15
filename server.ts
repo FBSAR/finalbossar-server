@@ -29,7 +29,7 @@ const adminRoute = require('./routes/admin.route');
 // API Routes
 app.use("/api/contact-us", contactUsRoute);
 app.use("/api/profile", profileRoute);
-app.use("/api/admin", adminRoute);
+app.use("/api/ad", adminRoute);
 
 // Listen on PORT
 const port = process.env.PORT || 3000;
