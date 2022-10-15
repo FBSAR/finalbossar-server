@@ -1,4 +1,4 @@
 node_modules/
-server.ts
+# server.ts
 .env
 package-lock.json
