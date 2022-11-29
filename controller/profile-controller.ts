@@ -7,27 +7,66 @@ const jwt = require('jsonwebtoken');
 const config = require('../config/default.json'); 
 const bcrypt = require("bcrypt");
 const Profile = require('../models/profile.model.ts');
+const Wallets = require('../models/wallets.model.ts');
+import { Network, Alchemy, Contract, Wallet } from 'alchemy-sdk';
+require('dotenv').config();
+
+const abi = [
+  // Read-Only Functions
+  "function balanceOf(address owner) view returns (uint256)",
+  "function totalSupply() view returns (uint)",
+  "function decimals() view returns (uint8)",
+  "function name() public view returns (string)",
+  "function symbol() view returns (string)",
+
+  // Authenticated Functions
+  "function transfer(address to, uint amount) returns (bool)",
+  "function transferFrom(address sender, address recipient, uint amount) returns (bool)",
+
+  // Events
+  "event Transfer(address indexed from, address indexed to, uint amount)"
+];
+
+const alchemy_key = String(process.env.ALCHEMY_API_KEY);
+const metaMaskPrivateKey = String(process.env.MM_PRIVATE_KEY);
+const contractAddress = String(process.env.BOSSCOIN_CONTRACT_ADD);
+const testAccount = String(process.env.MM_TEST_ACCOUNT);
+const settings = {
+  apiKey: String(alchemy_key),
+  network: Network.ETH_GOERLI,
+};
+
+const alchemy = new Alchemy(settings);
 
 interface Profile {
     firstName: string,
     lastName: string,
     email: string,
+    walletAddress?: string,
     password: string,
 }
 
+interface UserWallet {
+    email: string,
+    walletAddress: string
+}
+
 interface Token {
-  email: string,
   firstName: string,
   lastName: string,
+  email: string,
+  walletAddress: string,
 }
 
 exports.registerProfile = (req: any, res: any) => {
+    console.log('Registering Profile');
     console.log(req.body);
     let firstName = req.body.firstName;
     let lastName = req.body.lastName;
     let newsletter = req.body.newsletter;
     let email = req.body.email;
     let password = req.body.password;
+    let walletAddress = req.body.walletAddress;
     let dateRegistered = format(Date.now(), "MMMM do, yyyy");
   
     // Check if all info is in request.
@@ -35,43 +74,113 @@ exports.registerProfile = (req: any, res: any) => {
       return res.status(400).json({msg: "There was either no First or Last Name, Email, or Password in the Request!"})
     }
 
-    // Check and see if Profile already exists
     Profile.findOne(
-        {email: email},
-        (err: Error, profile: Profile) => {
-            if(err) {
-                return res.status(400).json({ 'msg': err });
-            }
-            if(profile) {
-                console.log(profile);
-                
-                return res.status(400).json({ msg: 'The Profile already exists with this email' });
-            } else {
-                // Create Profile Object
-                let newProfile = Profile({
-                    firstName,
-                    lastName,
-                    email,
-                    dateRegistered,
-                    newsletter,
-                    password
-                });
-                // Save Object
-                newProfile.save((err: Error, newProfile: Profile) => {
-                    if (err) {
+      {walletAddress: walletAddress},
+      (err: Error, profile: Profile) => {
+        if(err) {
+          return res.status(400).json({ 'msg': err });
+        }
+        if(profile) {
+            // console.log(profile);
+            console.log('Profile Found upon registration with request\'s wallet address.');
+            return res.status(400).json({ msg: 'A Profile already exists with this wallet address.' });
+        }
+        else {
+          if(!walletAddress) {
+            // Create Profile Object without a wallet address
+            let newProfile = Profile({
+              firstName,
+              lastName,
+              email,
+              dateRegistered,
+              newsletter,
+              password
+            });
+
+            newProfile.save((err: Error, newProfile: Profile) => {
+              if (err) {
+                  console.log(err)
+                  return res.status(400).json({ 'msg': err });
+              }
+              if (!newProfile) {
+                  console.log('There was no profile saved!')
+                  return res.status(400).json({ msg: 'There was no profile saved!' });
+              }
+              console.log('Profile registered!');
+              return res.status(200).json(newProfile);
+              }
+          );
+
+          }
+
+          Wallets.findOne(
+                {walletAddress: walletAddress},
+                (err: Error, wallet: UserWallet) => {
+                  if (err) {
+                    console.log(err)
+                    return res.status(400).json({ 'msg': err });
+                  }
+                  if (wallet) {
+                      console.log('There was an wallet address found with this address. No BOSSC Transaction will occur.')
+                      return res.status(400).json({ msg: 'Wallet has already been used for Free BOSSC.' });
+                  }
+
+                  if(!wallet) {
+                    // Save wallet address and email to Wallets Collection
+                    let newWallet = Wallets({
+                      walletAddress: walletAddress,
+                      email: email
+                    });
+            
+                    // Create Profile Object
+                    let newProfile = Profile({
+                      firstName,
+                      lastName,
+                      email,
+                      dateRegistered,
+                      newsletter,
+                      walletAddress,
+                      password
+                    });
+
+                    newWallet.save(async (err: Error, newWallet: UserWallet) => {
+                      if (err) {
                         console.log(err)
                         return res.status(400).json({ 'msg': err });
+                      }
+                      if (!newWallet) {
+                          console.log('There was no wallet saved!')
+                          return res.status(400).json({ msg: 'There was no wallet saved!' });
+                      }
+                      if(newWallet) {
+                        console.log('Wallet saved!');
+                    
+                        let provider = await alchemy.config.getProvider();
+                        let wallet = new Wallet(metaMaskPrivateKey, provider);
+                        let BossCoinContract = new Contract(contractAddress, abi, wallet);
+                        await BossCoinContract.transfer(walletAddress, 100);
+                        console.log('Sent user 100 BOSSC!');
+                        return res.status(200).json({msg: "Profile registered, 100 BOSSC Sent to their address"});
+                      }
+                    })
+
+                    newProfile.save( async (err: Error, newProfile: Profile) => {
+                      if (err) {
+                          console.log(err)
+                          return res.status(400).json({ 'msg': err });
+                      }
+                      if (!newProfile) {
+                          console.log('There was no profile saved!')
+                          return res.status(400).json({ msg: 'There was no profile saved!' });
+                      }
                     }
-                    if (!newProfile) {
-                        console.log('There was no profile saved!')
-                        return res.status(400).json({ msg: 'There was no profile saved!' });
-                    }
-                    console.log('Profile registered!');
-                    return res.status(200).json(newProfile);
-                    });
-                }
-            }
-    )
+                  );
+                  }
+              }
+          );
+      } 
+      }
+    );
 }
 exports.sendRegisterCode = (req: any, res: any) => {
   console.clear();
@@ -86,52 +195,66 @@ exports.sendRegisterCode = (req: any, res: any) => {
     return res.status(400).json({msg: "There was either no Code or Email in the Request!"})
   }
 
-  // Set transport service which will send the emails
-  var transporter =  nodemailer.createTransport({
-    service: 'hotmail',
-    auth: {
-          user: 'admin@finalbossar.com',
-          pass: process.env.PASS,
-      },
-      debug: true, // show debug output
-      logger: true // log information in console
-  });
+  // Check and see if Profile already exists
+  Profile.findOne(
+    {email: email},
+    async (err: Error, profile: Profile) => {
+        if(err) {
+            return res.status(400).json({ 'msg': err });
+        }
+        if(profile) {
+            // console.log(profile);
+            console.log('Profile Found upon registration with request\'s email.');
+            return res.status(400).json({ msg: 'A Profile already exists with this email' });
+        } else {
+            // Set transport service which will send the emails
+            var transporter =  nodemailer.createTransport({
+              service: 'hotmail',
+              auth: {
+                    user: 'admin@finalbossar.com',
+                    pass: process.env.PASS,
+                },
+                debug: true, // show debug output
+                logger: true // log information in console
+            });
 
-//  configuration for email details
- const mailOptions = {
-  from: 'register@finalbossar.com', // sender address
-  to: `${email}`, // list of receivers
-  subject: 'FinalBossAR Registration Code',
-  html:  `
-    <img src="https://final-boss-logos.s3.us-east-2.amazonaws.com/Final_Boss_Studios_Text_Logo_White_BG.png" style="width: 300px;">
-    <h3 style="
-      font-size: 1.4em;
-      color: #888;
-    ">Here is your 4 digit code</h3>
-    <p style="font-size: 1.4em;">Please use this code on the website to complete your registration: </p>
-    
-    <p style="
-      background: #330474;
-      border-radius: 100px;
-      width: 200px;
-      color: #fff;
-      padding: 0.5em;
-      text-align: center;
-      font-size: 2em;
-      letter-spacing: 11px;">${code}</p>`,
-  };
+            //  configuration for email details
+            const mailOptions = {
+            from: 'register@finalbossar.com', // sender address
+            to: `${email}`, // list of receivers
+            subject: 'FinalBossAR Registration Code',
+            html:  `
+              <img src="https://final-boss-logos.s3.us-east-2.amazonaws.com/Final_Boss_Studios_Text_Logo_White_BG.png" style="width: 300px;">
+              <h3 style="
+                font-size: 1.4em;
+                color: #888;
+              ">Here is your 4 digit code</h3>
+              <p style="font-size: 1.4em;">Please use this code on the website to complete your registration: </p>
+              
+              <p style="
+                background: #330474;
+                border-radius: 100px;
+                width: 200px;
+                color: #fff;
+                padding: 0.5em;
+                text-align: center;
+                font-size: 2em;
+                letter-spacing: 11px;">${code}</p>`,
+            };
 
- transporter.sendMail(mailOptions, function (err: any, info: any) {
-  if(err) {
-    console.log(err)
-    return res.status(400).json(err);
-  }
-  else {
-    console.log(info);
-    return res.status(200).json(info)
-  }
- });
-
+            transporter.sendMail(mailOptions, function (err: any, info: any) {
+            if(err) {
+              console.log(err)
+              return res.status(400).json(err);
+            }
+            else {
+              console.log(info);
+              return res.status(200).json(info)
+            }
+            });
+          }
+        }
+  )
 }
 /**
  * 
@@ -144,6 +267,7 @@ exports.sendRegisterCode = (req: any, res: any) => {
       email: token.email, 
       firstName: token.firstName,
       lastName: token.lastName,
+      walletAddress: token.walletAddress,
     }, config.jwtSecret, {
       expiresIn: 200 // 86400 expires in 24 hours
     });
@@ -180,7 +304,8 @@ exports.loginProfile = (req: any, res: any) => {
                       token: createToken(profile),
                       firstName: profile.firstName,
                       lastName: profile.lastName,
-                      email: profile.email
+                      email: profile.email,
+                      walletAddress: profile.walletAddress
                   });
                   
                 } else {
@@ -188,7 +313,8 @@ exports.loginProfile = (req: any, res: any) => {
                     msg: 'Profile @' + profile.email + ' has logged in.',
                     firstName: profile.firstName,
                     lastName: profile.lastName,
-                    email: profile.email
+                    email: profile.email,
+                    walletAddress: profile.walletAddress
                 });
                 };
             } else {

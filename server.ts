@@ -6,12 +6,12 @@ const dotenv                  = require('dotenv');
 
 // Configure Environment
 dotenv.config();
-console.log(process.env.DB_HOST_PROD);
+console.log(process.env.DB_HOST_DEV);
 
 // config and connect to mongodb
 console.log('Connecting via Mongoose');
 mongoose
-  .connect(process.env.DB_HOST_PROD, {
+  .connect(process.env.DB_HOST_DEV, {
     useNewUrlParser: true, useUnifiedTopology: true
   })
   .then(() => console.log('Connected to MongoDB'))
@@ -25,16 +25,22 @@ app.use(express.json());
 const contactUsRoute = require('./routes/contact-us.route');
 const profileRoute = require('./routes/profile.route');
 const adminRoute = require('./routes/admin.route');
+const WebThreeRoute = require('./routes/web3.route');
 
 // API Routes
 app.use("/api/contact-us", contactUsRoute);
 app.use("/api/profile", profileRoute);
 app.use("/api/ad", adminRoute);
+app.use("/api/web3", WebThreeRoute);
+ 
 
 // Listen on PORT
 const port = process.env.PORT || 3000;
 app.listen(port, 
   () => {
-    console.log(`Listening on port ${port}`)})    
+    console.log(`Listening on port ${port}`)
+  });
+
+  
 
 export {}
