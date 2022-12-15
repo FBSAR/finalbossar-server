@@ -25,13 +25,15 @@ app.use(express.json());
 const contactUsRoute = require('./routes/contact-us.route');
 const profileRoute = require('./routes/profile.route');
 const adminRoute = require('./routes/admin.route');
-const WebThreeRoute = require('./routes/web3.route');
+const webThreeRoute = require('./routes/web3.route');
+const jobAppRoute = require('./routes/job-app.route');
 
 // API Routes
 app.use("/api/contact-us", contactUsRoute);
 app.use("/api/profile", profileRoute);
 app.use("/api/ad", adminRoute);
-app.use("/api/web3", WebThreeRoute);
+app.use("/api/job-app", jobAppRoute);
+app.use("/api/web3", webThreeRoute);
  
 
 // Listen on PORT

@@ -5,7 +5,7 @@ const hbs = require('nodemailer-express-handlebars')
 const path = require('path')
 const Admin = require('../models/admin.model.ts');
 const Profile = require('../models/profile.model.ts');
-
+const JobApp = require('../models/job-app.model.ts');
 
 interface Admin {
     email: string,
@@ -22,6 +22,24 @@ interface Token {
   email: string,
   firstName: string,
   lastName: string,
+}
+interface applyingUser {
+    job: String,
+    availability: String,
+    firstName: String,
+    lastName: String,
+    age: String,
+    phone: String,
+    email: String,
+    addressOne: String,
+    addressTwo: String,
+    city: String,
+    state: String,
+    zip: String,
+    resume: String,
+    goodFitReason: String,
+    favoriteGames: String,
+    xrExperience: String
 }
 
 exports.loginAdmin = (req: any, res: any) => {
@@ -110,6 +128,86 @@ exports.getProfiles = (req: any, res: any) => {
             });
         } else {
             return res.status(400).json({ msg: "There were no profiles" });
+            }
+        }
+    )
+}
+exports.getJobApps = (req: any, res: any) => {
+  console.log('Trying to get all Job Apps');
+
+  JobApp.find(
+    (err: Error, applyingUsers: Array<applyingUser>) => {
+        if(err) {
+            return res.status(400).json({ 'msg': err });
+        }
+        console.log('Found Applying Users');
+        console.log(applyingUsers);
+        
+        if(applyingUsers) {
+            return res.status(200).json({
+                applyingUsersCount: applyingUsers.length,
+                applyingUsers
+            });
+        } else {
+            return res.status(400).json({ msg: "There were no applying users!" });
+            }
+        }
+    )
+}
+exports.saveApp = (req: any, res: any) => {
+  console.log('Trying to get all Job Apps');
+
+  JobApp.findOneAndUpdate(
+    {_id: req.body._id},
+    {saved: true},
+    (err: Error, app: any) => {
+        if(err) {
+            return res.status(400).json({ 'msg': err });
+        }
+        if(app) {
+            return res.status(200).json({
+                app
+            });
+        } else {
+            return res.status(400).json({ msg: "There were no applying users!" });
+            }
+        }
+    )
+}
+exports.unSaveApp = (req: any, res: any) => {
+  console.log('Trying to get all Job Apps');
+
+  JobApp.findOneAndUpdate(
+    {_id: req.body._id},
+    {saved: false},
+    (err: Error, app: any) => {
+        if(err) {
+            return res.status(400).json({ 'msg': err });
+        }        
+        if(app) {
+            return res.status(200).json({
+                app
+            });
+        } else {
+            return res.status(400).json({ msg: "There were no applying users!" });
+            }
+        }
+    )
+}
+exports.denyApp = (req: any, res: any) => {
+  JobApp.findOneAndDelete(
+    {_id: req.body._id},
+    (err: Error, app: any) => {
+        if(err) {
+            return res.status(400).json({ 'msg': err });
+        }
+        
+        if(app) {
+            return res.status(200).json({
+                app
+            });
+        } else {
+            return res.status(400).json({ msg: "There were no deleted app!" });
             }
         }
     )

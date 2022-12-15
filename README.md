@@ -2,6 +2,10 @@
     * environment.prod
     * AWS Route 53
     * update 'fbs-copy-www' aws ip address (ssh connections on local repository)
+
+# Package.json
+Add  "postinstall": "$(yum bin)/pm2 install typecsript" to "scripts" for PM2 package
+
  
 
 # Using Nodenom with TypeScript files Locally & AWS

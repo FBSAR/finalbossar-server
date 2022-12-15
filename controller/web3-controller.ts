@@ -1,14 +1,5 @@
 require('dotenv').config();
-const Profile = require('../models/profile.model.ts');
 import { Network, Alchemy, Contract, Wallet } from 'alchemy-sdk';
-
-interface Profile {
-    firstName: string,
-    lastName: string,
-    email: string,
-    walletAddress?: string,
-    password: string,
-}
 
 const abi = [
     // Read-Only Functions
@@ -29,9 +20,8 @@ const abi = [
 const alchemy_key = String(process.env.ALCHEMY_API_KEY);
 const metaMaskPrivateKey = String(process.env.MM_PRIVATE_KEY);
 const contractAddress = String(process.env.BOSSCOIN_CONTRACT_ADD);
-const testAccount = String(process.env.MM_TEST_ACCOUNT);
 const settings = {
-    apiKey: String(alchemy_key),
+    apiKey: 'em0H5LwtJwzywUm0OHRWWuPOgaTPcx6s',
     network: Network.ETH_GOERLI,
 };
 
@@ -39,8 +29,8 @@ const alchemy = new Alchemy(settings);
 
 exports.totalSupply = async (req: any, res: any) =>{
     const provider = await alchemy.config.getProvider()
-    const wallet = new Wallet(metaMaskPrivateKey, provider);
-    const BossCoinContract = new Contract(contractAddress, abi, wallet);
+    const wallet = await new Wallet("144ca6e5a47324d280a09a6b5ac0d4282e28cd9cf55dbd2408b0426c69c4fd4f", provider);
+    const BossCoinContract = await new Contract(contractAddress, abi, wallet);
     const totalSupply = await BossCoinContract.totalSupply();
     console.log(`Total Supply: ${totalSupply}`);
     return res.status(200).json({supply: totalSupply});    
