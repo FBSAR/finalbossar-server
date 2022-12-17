@@ -6,12 +6,12 @@ const dotenv                  = require('dotenv');
 
 // Configure Environment
 dotenv.config();
-console.log(process.env.DB_HOST_DEV);
+console.log(process.env.DB_HOST_PROD);
 
 // config and connect to mongodb
 console.log('Connecting via Mongoose');
 mongoose
-  .connect(process.env.DB_HOST_DEV, {
+  .connect(process.env.DB_HOST_PROD, {
     useNewUrlParser: true, useUnifiedTopology: true
   })
   .then(() => console.log('Connected to MongoDB'))
@@ -27,6 +27,7 @@ const profileRoute = require('./routes/profile.route');
 const adminRoute = require('./routes/admin.route');
 const webThreeRoute = require('./routes/web3.route');
 const jobAppRoute = require('./routes/job-app.route');
+const resumeRoute = require('./routes/resume.route');
 
 // API Routes
 app.use("/api/contact-us", contactUsRoute);
@@ -34,6 +35,7 @@ app.use("/api/profile", profileRoute);
 app.use("/api/ad", adminRoute);
 app.use("/api/job-app", jobAppRoute);
 app.use("/api/web3", webThreeRoute);
+app.use("/api/resume", resumeRoute);
  
 
 // Listen on PORT

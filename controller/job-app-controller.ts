@@ -23,7 +23,7 @@ interface newApp {
     goodFitReason: String,
     favoriteGames: String,
     strengthWeaknesses: String,
-    dateApplied: String,
+    dateApplied: Date,
   }
 
 //   TODO: Send Email to user after success
@@ -33,7 +33,7 @@ exports.submitApp = (req: any, res: any ) => {
 
     let newJobApp = JobApp({
         job: req.body.job,
-        availability: req.body.availability,
+        availability: new Date(req.body.availability).valueOf(),
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         age: req.body.age,
@@ -49,7 +49,8 @@ exports.submitApp = (req: any, res: any ) => {
         goodFitReason: req.body.goodFitReason,
         favoriteGames: req.body.favoriteGames,
         strengthWeaknesses: req.body.strengthWeaknesses,
-        dateApplied: format(Date.now(), "MMMM do, yyyy"),
+        dateApplied: Date.now().valueOf(),
+        // dateApplied: format(Date.now(), "MMMM do, yyyy"),
     })
 
 

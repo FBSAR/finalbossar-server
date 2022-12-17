@@ -29,7 +29,7 @@ const alchemy = new Alchemy(settings);
 
 exports.totalSupply = async (req: any, res: any) =>{
     const provider = await alchemy.config.getProvider()
-    const wallet = await new Wallet("144ca6e5a47324d280a09a6b5ac0d4282e28cd9cf55dbd2408b0426c69c4fd4f", provider);
+    const wallet = await new Wallet(metaMaskPrivateKey, provider);
     const BossCoinContract = await new Contract(contractAddress, abi, wallet);
     const totalSupply = await BossCoinContract.totalSupply();
     console.log(`Total Supply: ${totalSupply}`);

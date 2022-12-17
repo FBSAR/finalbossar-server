@@ -8,8 +8,7 @@ const JobAppSchema: any = new mongoose.Schema(
         maxlength: 40,
       },
       availability: {
-        type: String,
-        maxlength: 40,
+        type: Date,
       },
       saved: {
         type: Boolean,
@@ -24,8 +23,8 @@ const JobAppSchema: any = new mongoose.Schema(
         maxlength: 40,
       },
       age: {
-        type: String,
-        maxlength: 2,
+        type: Number,
+        maxlength: 100,
       },
       gender: {
         type: String,
@@ -40,8 +39,7 @@ const JobAppSchema: any = new mongoose.Schema(
         maxlength: 40,
       },
       dateApplied: {
-        type: String,
-        maxlength: 40,
+        type: Date,
       },
       addressOne: {
         type: String,
