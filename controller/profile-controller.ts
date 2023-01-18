@@ -66,6 +66,7 @@ exports.registerProfile = (req: any, res: any) => {
     let newsletter = req.body.newsletter;
     let email = req.body.email;
     let password = req.body.password;
+    // Wallet address will be valid when BOSSC promotion starts.
     let walletAddress = req.body.walletAddress;
     let dateRegistered = format(Date.now(), "MMMM do, yyyy");
   
@@ -182,6 +183,7 @@ exports.registerProfile = (req: any, res: any) => {
       }
     );
 }
+
 exports.sendRegisterCode = (req: any, res: any) => {
   console.clear();
   console.log('Sending Registration Code');

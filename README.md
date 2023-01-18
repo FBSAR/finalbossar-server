@@ -15,6 +15,7 @@ Add  "postinstall": "$(yum bin)/pm2 install typecsript" to "scripts" for PM2 pac
 # Using PM2 with TypeScript files on AWS
 ** pm2 stop <id#>
 ** pm2 list
+** sudo pm2 install typescript
 ** ./node_modules/.bin/pm2 install typescript
     * Local PM2 installed in node_modules of project needs typescript installed
     * https://github.com/Unitech/pm2/issues/3312

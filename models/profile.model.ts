@@ -28,9 +28,9 @@ const ProfileSchema: any = new mongoose.Schema(
       password: {
         type: String,
       },
-      walletAddress: {
-        type: String,
-      },
+      // walletAddress: {
+      //   type: String,
+      // },
   });
 
   // Called before save method on the model

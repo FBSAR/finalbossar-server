@@ -1,5 +1,5 @@
 require('dotenv').config();
-import { Network, Alchemy, Contract, Wallet } from 'alchemy-sdk';
+import { Network, Alchemy, AlchemySettings, Contract, Wallet } from 'alchemy-sdk';
 
 const abi = [
     // Read-Only Functions
@@ -19,14 +19,15 @@ const abi = [
 
 const alchemy_key = String(process.env.ALCHEMY_API_KEY);
 const metaMaskPrivateKey = String(process.env.MM_PRIVATE_KEY);
-const contractAddress = String(process.env.BOSSCOIN_CONTRACT_ADD);
-const settings = {
+const settings: AlchemySettings = {
     apiKey: 'em0H5LwtJwzywUm0OHRWWuPOgaTPcx6s',
     network: Network.ETH_GOERLI,
+    maxRetries: 3
 };
 
 const alchemy = new Alchemy(settings);
 
+// Total Supply = 120,000,000 Jan/16/2023 
 exports.totalSupply = async (req: any, res: any) =>{
     const provider = await alchemy.config.getProvider()
     const wallet = await new Wallet(metaMaskPrivateKey, provider);
@@ -35,21 +36,23 @@ exports.totalSupply = async (req: any, res: any) =>{
     console.log(`Total Supply: ${totalSupply}`);
     return res.status(200).json({supply: totalSupply});    
 }
+// Total Supply = 120,000,000 Jan/16/2023 
+exports.totalCoinsInCirculation = async (req: any, res: any) =>{
+    const provider = await alchemy.config.getProvider()
+    const wallet = await new Wallet(metaMaskPrivateKey, provider);
+    const BossCoinContract = await new Contract(contractAddress, abi, wallet);
+    
+    // Needs to be modified each time coins are minted
+    const totalCoinsMinted = 120000000;
+    const totalSupply = await BossCoinContract.totalSupply();
+    const totalInCirc = totalCoinsMinted - totalSupply;
+    console.log(`Total Coins in Circulation: ${totalInCirc}`);
+    return res.status(200).json({total: totalInCirc});    
+}
 
-
-/**
- * TODO:
- * Get user's MetaMask Address from Request
- * Check to see if that Email or Wallet address has already recieved the free BOSSC.
- * Create listen events to listen for Final Boss Register Event
- * MetaMask quick register for first time users.
- * Should users get a chance at getting the 100 BOSSC if the opted out at registration?
- * Provider vs Signer
- * Handling Errors
- */ https://docs.metamask.io/guide/create-dapp.html#basic-action-part-1
+const contractAddress = String(process.env.BOSSCOIN_CONTRACT_ADD);
 
 exports.balanceOf = async (req: any, res: any) => {
-    let recepientEmail = req.body.email;
     let recepientAddress = req.body.walletAddress;
     let provider = await alchemy.config.getProvider();
     let wallet = new Wallet(metaMaskPrivateKey, provider);
@@ -58,6 +61,14 @@ exports.balanceOf = async (req: any, res: any) => {
     console.log(`Total Supply: ${balance}`);
     return res.status(200).json({balance: `${balance}`});    
 
+}
+
+exports.getAllTransactions = async (req: any, res: any) => {
+    await alchemy.core.getBlock('0x2e7e7c9513a43a11166cf657591e9be680a5b420914a3ec0db0e1029abed0da4')
+        .then( data => {
+            console.log(data);
+            return res.status(200).json(data);    
+        })
 }
 
 export {};
