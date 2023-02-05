@@ -3,13 +3,21 @@ const express                 = require("express");
 const app                     = express();
 const cors                    = require('cors');
 const dotenv                  = require('dotenv');
+// const https                   = require('https');
+// const fs                      = require('fs');
+
+// HTTPS Config
+// const options = {
+//   key: fs.readFileSync('./192.168.0.169-key.pem'), // Replace with the path to your key
+//   cert: fs.readFileSync('./192.168.0.169.pem') // Replace with the path to your certificate
+// }
 
 // Configure Environment
 dotenv.config();
-console.log(process.env.DB_HOST_PROD);
 
-// config and connect to mongodb
+// Connect to mongodb
 console.log('Connecting via Mongoose');
+console.log(process.env.DB_HOST_PROD);
 mongoose
   .connect(process.env.DB_HOST_PROD, {
     useNewUrlParser: true, useUnifiedTopology: true
@@ -44,6 +52,15 @@ app.listen(port,
   () => {
     console.log(`Listening on port ${port}`)
   });
+
+// HTTPS
+// app.use((req: any, res: any, next: any) => {
+//   res.send('<h1>HTTPS Works!</h1>');
+// });
+
+// https.createServer(options, app).listen(port,() => {
+//   console.log('HTTPS Server listening on port ' + port);
+// });
 
   
 
