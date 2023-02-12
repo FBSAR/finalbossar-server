@@ -51,11 +51,10 @@ const uploadResume = ( file: any, source: any, targetName: any, res: any ) => {
     // captures to extension of the file e.i .png
     var ext = path.extname(file.originalname)
 
-    // Makes sure that the resume is a PDF file
-    if( ext === '.pdf') {
+    if( ext === '.pdf' || '.docx' || '.png' || '.doc' || '.txt') {
        console.log('The file extention is correct. Good Job!')
     } else {
-      console.error('File needs to be .pdf')
+      console.error('File needs to be .pdf, doc, docx, or png')
        return res.status(400).json({msg: 'File needs to be a .pdf file'})
     }
 
