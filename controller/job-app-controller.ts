@@ -63,6 +63,41 @@ exports.submitApp = (req: any, res: any ) => {
             console.log('There was no job app saved!')
             return res.status(400).json({ msg: 'There was no job app saved!' });
         }
+        // Set transport service which will send the emails
+        var transporter =  nodemailer.createTransport({
+          service: 'hotmail',
+          auth: {
+                user: 'admin@finalbossar.com',
+                pass: process.env.PASS,
+            },
+            debug: true, // show debug output
+            logger: true // log information in console
+        });
+
+        //  configuration for email details
+        const mailOptions = {
+        from: 'admin@finalbossar.com', // sender address
+        to: `${req.body.email}`, // list of receivers
+        subject: `Final Boss Studios Application | ${req.body.job}`,
+        html:  `
+          <img src="https://final-boss-logos.s3.us-east-2.amazonaws.com/Final_Boss_Studios_Text_Logo_White_BG.png" style="width: 300px;">
+          <h3 style="
+            font-size: 1.4em;
+            color: #330474;
+          ">Thank you for applying for Final Boss Studios!</h3>
+          <p style="font-size: 1em;">We will be looking over your application, and we will reach out to you soon. </p>`,
+        };
+
+        transporter.sendMail(mailOptions, function (err: any, info: any) {
+        if(err) {
+          console.log(err)
+          return res.status(400).json(err);
+        }
+        else {
+          console.log(info);
+          return res.status(200).json(info)
+        }
+        });
         return res.status(200).json({
             msg: 'Thank you, ' 
             + req.body.firstName 
