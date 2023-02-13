@@ -75,7 +75,7 @@ exports.submitApp = (req: any, res: any ) => {
         });
 
         //  configuration for email details
-        const mailOptions = {
+        const userMailOptions = {
         from: 'admin@finalbossar.com', // sender address
         to: `${req.body.email}`, // list of receivers
         subject: `Final Boss Studios Application | ${req.body.job}`,
@@ -87,8 +87,22 @@ exports.submitApp = (req: any, res: any ) => {
           ">Thank you for applying for Final Boss Studios!</h3>
           <p style="font-size: 1em;">We will be looking over your application, and we will reach out to you soon. </p>`,
         };
+        const adminMailOptions = {
+        from: 'admin@finalbossar.com', // sender address
+        to: `admin@finalbossar.com`, // list of receivers
+        subject: `Final Boss Studios Application | ${req.body.job}`,
+        html:  `
+          <img src="https://final-boss-logos.s3.us-east-2.amazonaws.com/Final_Boss_Studios_Text_Logo_White_BG.png" style="width: 300px;">
+          <h3 style="
+            font-size: 1.4em;
+            color: #330474;
+          ">A user has applied for Final Boss Studios!</h3>
+          <p style="font-size: 1em;">${req.body.firstName} ${req.body.lastName} | ${req.body.job}</p>
+          <a href="https://finalbossar.com/fbs-admin">Please Visit FBS Admin to view App</a>
+          `,
+        };
 
-        transporter.sendMail(mailOptions, function (err: any, info: any) {
+        transporter.sendMail(userMailOptions, function (err: any, info: any) {
         if(err) {
           console.log(err)
           return res.status(400).json(err);
@@ -98,6 +112,18 @@ exports.submitApp = (req: any, res: any ) => {
           return res.status(200).json(info)
         }
         });
+
+        transporter.sendMail(adminMailOptions, function (err: any, info: any) {
+        if(err) {
+          console.log(err)
+          return res.status(400).json(err);
+        }
+        else {
+          console.log(info);
+          return res.status(200).json(info)
+        }
+        });
+
         return res.status(200).json({
             msg: 'Thank you, ' 
             + req.body.firstName 

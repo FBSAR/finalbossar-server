@@ -55,11 +55,11 @@ const JobAppSchema: any = new mongoose.Schema(
       },
       state: {
         type: String,
-        maxlength: 2,
+        maxlength: 40,
       },
       zip: {
         type: String,
-        maxlength: 5,
+        maxlength: 10,
       },
       resume: {
         type: String,
